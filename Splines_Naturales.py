@@ -2,9 +2,6 @@ import subprocess
 import sys
 import math
 
-# =========================================================
-# INSTALACION AUTOMATICA
-# =========================================================
 for pkg in ["matplotlib", "numpy"]:
     try:
         __import__(pkg)
@@ -12,9 +9,6 @@ for pkg in ["matplotlib", "numpy"]:
         print(f"Instalando {pkg}...")
         subprocess.check_call([sys.executable, "-m", "pip", "install", pkg])
 
-# =========================================================
-# IMPORTS
-# =========================================================
 import tkinter as tk
 from tkinter import messagebox
 import matplotlib.pyplot as plt
@@ -23,23 +17,25 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib import rcParams
 import numpy as np
 
-# =========================================================
-# COLORES
-# =========================================================
-BG = "#070711"
-PANEL = "#0d0d18"
-CARD = "#161628"
-CARD2 = "#1d1d35"
-ACCENT = "#6c63ff"
+BG      = "#070711"
+PANEL   = "#0d0d18"
+CARD    = "#161628"
+CARD2   = "#1d1d35"
+ACCENT  = "#6c63ff"
 ACCENT2 = "#ff4d94"
-TEXT = "#f1f1ff"
+TEXT    = "#f1f1ff"
 SUBTEXT = "#9696c7"
 SUCCESS = "#00e59b"
-BORDER = "#2d2d4f"
+BORDER  = "#2d2d4f"
 
-# =========================================================
-# TEMA DE MATPLOTLIB
-# =========================================================
+# colores exclusivos para la grafica Mi
+MI_BG     = "#0f1020"
+MI_GRID   = "#1a1a30"
+MI_ZERO   = "#555577"
+MI_SPINE  = "#333355"
+MI_ZERO_C = "#9c95ff"   # color etiqueta cuando M = 0
+MI_INT_C  = "#ff80b2"   # color etiqueta cuando M != 0
+
 rcParams.update({
     "figure.facecolor": BG,
     "axes.facecolor": "#0f1020",
@@ -55,9 +51,6 @@ rcParams.update({
     "legend.labelcolor": TEXT
 })
 
-# =========================================================
-# FUNCIONES MATEMATICAS
-# =========================================================
 permitidas = {
     "sin": math.sin,
     "cos": math.cos,
@@ -75,9 +68,6 @@ def evaluar(expr):
     expr = expr.replace("^", "**")
     return eval(expr, {"__builtins__": {}}, permitidas)
 
-# =========================================================
-# GAUSS
-# =========================================================
 def resolver_sistema_gauss(A, b):
     n = len(b)
 
@@ -110,9 +100,6 @@ def resolver_sistema_gauss(A, b):
 
     return x
 
-# =========================================================
-# SPLINE NATURAL
-# =========================================================
 def spline_natural(x, y, valor):
     n = len(x)
 
@@ -199,9 +186,6 @@ def spline_natural(x, y, valor):
 
     return resultado, M, h, datos, None
 
-# =========================================================
-# EVALUAR SPLINE
-# =========================================================
 def evaluar_spline(x_pts, y_pts, M, h, t):
     for i in range(len(x_pts) - 1):
         if x_pts[i] <= t <= x_pts[i + 1]:
@@ -225,9 +209,6 @@ def evaluar_spline(x_pts, y_pts, M, h, t):
 
     return None
 
-# =========================================================
-# EXPLICACION DEL PROCEDIMIENTO
-# =========================================================
 def mostrar_explicacion():
     ventana_exp = tk.Toplevel(ventana)
     ventana_exp.title("Explicación del Procedimiento")
@@ -478,9 +459,6 @@ Todas las funciones trigonométricas trabajan en radianes.
         cursor="hand2"
     ).pack(pady=15)
 
-# =========================================================
-# PROCEDIMIENTO DEL RESULTADO
-# =========================================================
 def mostrar_procedimiento(d):
     for w in frame_proc.winfo_children():
         w.destroy()
@@ -563,9 +541,6 @@ S({d['valor']}) = {round(d['resultado'], 6)}
     texto.insert("1.0", contenido)
     texto.config(state="disabled")
 
-# =========================================================
-# GRAFICAR
-# =========================================================
 def graficar(x_pts, y_pts, M, h, valor, resultado):
     fig.clf()
 
@@ -577,37 +552,21 @@ def graficar(x_pts, y_pts, M, h, valor, resultado):
         "#00cfff"
     ]
 
-    # =====================================================
-    # GRAFICA DEL SPLINE
-    # =====================================================
+    # ── gráfica izquierda: spline ────────────────────────────────────────────
     ax1 = fig.add_subplot(1, 2, 1)
 
     for i in range(len(x_pts) - 1):
         xs = np.linspace(x_pts[i], x_pts[i + 1], 200)
         ys = [evaluar_spline(x_pts, y_pts, M, h, t) for t in xs]
+        c  = colores[i % len(colores)]
 
-        c = colores[i % len(colores)]
-
-        ax1.plot(
-            xs,
-            ys,
-            color=c,
-            lw=2.5,
-            label=f"Tramo {i}  [{x_pts[i]}, {x_pts[i+1]}]"
-        )
-
+        ax1.plot(xs, ys, color=c, lw=2.5,
+                 label=f"Tramo {i}  [{x_pts[i]}, {x_pts[i+1]}]")
         ax1.fill_between(xs, ys, alpha=0.08, color=c)
 
-    ax1.scatter(
-        x_pts,
-        y_pts,
-        s=90,
-        color=CARD,
-        edgecolors=ACCENT,
-        linewidths=2,
-        zorder=5,
-        label="Nodos"
-    )
+    ax1.scatter(x_pts, y_pts, s=90,
+                color=CARD, edgecolors=ACCENT, linewidths=2,
+                zorder=5, label="Nodos")
 
     for i in range(len(x_pts)):
         ax1.annotate(
@@ -615,151 +574,97 @@ def graficar(x_pts, y_pts, M, h, valor, resultado):
             xy=(x_pts[i], y_pts[i]),
             xytext=(6, 6),
             textcoords="offset points",
-            fontsize=8,
-            color=SUBTEXT
+            fontsize=8, color=SUBTEXT
         )
 
-    ax1.scatter(
-        [valor],
-        [resultado],
-        color=ACCENT2,
-        s=200,
-        marker="*",
-        zorder=7,
-        label=f"S({valor}) = {round(resultado, 4)}"
-    )
+    ax1.scatter([valor], [resultado],
+                color=ACCENT2, s=200, marker="*", zorder=7,
+                label=f"S({valor}) = {round(resultado, 4)}")
 
-    ax1.axvline(valor, color=ACCENT2, ls="--", alpha=0.3)
+    ax1.axvline(valor,     color=ACCENT2, ls="--", alpha=0.3)
     ax1.axhline(resultado, color=ACCENT2, ls="--", alpha=0.3)
 
-    ax1.set_title(
-        "Spline Cúbico Natural",
-        fontsize=15,
-        fontweight="bold"
-    )
-
+    ax1.set_title("Spline Cúbico Natural", fontsize=15, fontweight="bold")
     ax1.set_xlabel("x")
     ax1.set_ylabel("y")
-
     ax1.grid(True)
     ax1.legend(fontsize=8)
 
-    # =====================================================
-    # GRAFICA MOMENTOS Mi
-    # =====================================================
+    # ── gráfica derecha: momentos Mi estilo GeoGebra oscuro ─────────────────
     ax2 = fig.add_subplot(1, 2, 2)
 
-    indices = np.arange(len(M))
+    ax2.set_facecolor(MI_BG)
 
-    colores_m = []
-    for m in M:
-        if abs(m) < 1e-10:
-            colores_m.append(ACCENT)
-        else:
-            colores_m.append(ACCENT2)
+    indices   = np.arange(len(M))
+    colores_m = [ACCENT  if abs(m) < 1e-10 else ACCENT2 for m in M]
+    borde_m   = [MI_ZERO_C if abs(m) < 1e-10 else MI_INT_C for m in M]
 
     bars = ax2.bar(
-        indices,
-        M,
+        indices, M,
         color=colores_m,
-        edgecolor=BORDER,
+        edgecolor=borde_m,
         linewidth=1.5,
-        width=0.5,
+        width=0.45,
         zorder=3
     )
 
-    ax2.axhline(
-        0,
-        color="#40406b",
-        linewidth=1.2
-    )
+    # línea de cero destacada
+    ax2.axhline(0, color=MI_ZERO, linewidth=1.8, zorder=4, linestyle="-")
 
-    mx = max(M)
-    mn = min(M)
-    rango = mx - mn
+    # grid estilo GeoGebra: líneas finas, dos niveles
+    ax2.grid(True, which="major", color=MI_GRID, linewidth=1.0,
+             alpha=1.0, zorder=0)
+    ax2.minorticks_on()
+    ax2.grid(True, which="minor", color=MI_GRID, linewidth=0.5,
+             alpha=0.7, zorder=0)
 
-    if rango == 0:
-        rango = 1
+    # spines tenues para no cortar la vista oscura
+    for spine in ax2.spines.values():
+        spine.set_edgecolor(MI_SPINE)
+        spine.set_linewidth(0.8)
 
-    margen = rango * 0.18
-    ax2.set_ylim(mn - margen, mx + margen)
+    ax2.tick_params(colors=SUBTEXT, labelsize=8)
+    ax2.xaxis.label.set_color(SUBTEXT)
+    ax2.yaxis.label.set_color(SUBTEXT)
 
-    offset = rango * 0.05
-
-    for bar, val in zip(bars, M):
-        x = bar.get_x() + bar.get_width() / 2
-
-        if val >= 0:
-            y = val + offset
-            va = "bottom"
-        else:
-            y = val - offset
-            va = "top"
-
-        ax2.text(
-            x,
-            y,
-            f"{val:.4f}",
-            ha="center",
-            va=va,
-            fontsize=9,
-            color="white",
-            fontweight="bold"
-        )
-
-    ax2.set_title(
-        "Momentos Mᵢ  (2das derivadas)",
-        fontsize=14,
-        fontweight="bold",
-        color=TEXT,
-        pad=12
-    )
-
-    ax2.set_xlabel(
-        "Nodo",
-        fontsize=11,
-        color=SUBTEXT
-    )
-
-    ax2.set_ylabel(
-        "Valor M",
-        fontsize=11,
-        color=SUBTEXT
-    )
+    # margen vertical proporcional
+    mx    = max(M)
+    mn    = min(M)
+    rango = mx - mn if (mx - mn) != 0 else 1
+    ax2.set_ylim(mn - rango * 0.28, mx + rango * 0.28)
+    ax2.set_xlim(-0.7, len(M) - 0.3)
 
     ax2.set_xticks(indices)
-
     ax2.set_xticklabels(
         [f"M{i}\nx={x_pts[i]}" for i in indices],
-        fontsize=8,
-        color=TEXT
+        fontsize=8, color=SUBTEXT
     )
 
-    ax2.grid(axis="y", linestyle="--", alpha=0.18)
+    # etiquetas de valor sobre/bajo cada barra
+    offset = rango * 0.055
+    for bar, val in zip(bars, M):
+        cx      = bar.get_x() + bar.get_width() / 2
+        ey      = val + offset if val >= 0 else val - offset
+        va      = "bottom"    if val >= 0 else "top"
+        txt_c   = MI_ZERO_C   if abs(val) < 1e-10 else MI_INT_C
 
-    p1 = mpatches.Patch(
-        color=ACCENT,
-        label="M = 0  (condición natural)"
-    )
+        ax2.text(cx, ey, f"{val:.4f}",
+                 ha="center", va=va,
+                 fontsize=9, color=txt_c, fontweight="bold")
 
-    p2 = mpatches.Patch(
-        color=ACCENT2,
-        label="M ≠ 0  (nodo interior)"
-    )
+    ax2.set_title("Momentos Mᵢ  (2das derivadas)",
+                  fontsize=13, fontweight="bold", color=TEXT, pad=10)
+    ax2.set_xlabel("Nodo")
+    ax2.set_ylabel("Valor M")
 
-    ax2.legend(
-        handles=[p1, p2],
-        fontsize=8,
-        facecolor=CARD,
-        edgecolor=BORDER
-    )
+    p1 = mpatches.Patch(color=ACCENT,  label="M = 0  (condición natural)")
+    p2 = mpatches.Patch(color=ACCENT2, label="M ≠ 0  (nodo interior)")
+    ax2.legend(handles=[p1, p2], fontsize=8,
+               facecolor=CARD, edgecolor=BORDER, labelcolor=TEXT)
 
     fig.tight_layout(pad=2.5)
     canvas.draw()
 
-# =========================================================
-# CALCULAR
-# =========================================================
 def calcular():
     try:
         texto = entrada_puntos.get("1.0", tk.END).strip()
@@ -799,9 +704,6 @@ def calcular():
     except Exception as e:
         messagebox.showerror("Error", str(e))
 
-# =========================================================
-# LIMPIAR
-# =========================================================
 def limpiar():
     entrada_puntos.delete("1.0", tk.END)
     entrada_valor.delete(0, tk.END)
@@ -817,17 +719,13 @@ def limpiar():
     fig.clf()
     canvas.draw()
 
-# =========================================================
-# VENTANA PRINCIPAL
-# =========================================================
+# ── ventana principal ────────────────────────────────────────────────────────
+
 ventana = tk.Tk()
 ventana.title("Spline Cubico Natural")
 ventana.state("zoomed")
 ventana.configure(bg=BG)
 
-# =========================================================
-# PANEL IZQUIERDO
-# =========================================================
 panel = tk.Frame(ventana, bg=PANEL, width=380)
 panel.pack(side=tk.LEFT, fill=tk.Y)
 panel.pack_propagate(False)
@@ -859,11 +757,7 @@ entrada_puntos = tk.Text(
 )
 
 entrada_puntos.pack(fill=tk.X, padx=15, pady=5)
-
-entrada_puntos.insert(
-    tk.END,
-    "1,2\n2,3\n3,5\n4,4\n5,6"
-)
+entrada_puntos.insert(tk.END, "1,2\n2,3\n3,5\n4,4\n5,6")
 
 tk.Label(
     panel,
@@ -883,12 +777,8 @@ entrada_valor = tk.Entry(
 )
 
 entrada_valor.pack(fill=tk.X, padx=15, pady=5)
-
 entrada_valor.insert(0, "2.5")
 
-# =========================================================
-# BOTONES
-# =========================================================
 def crear_boton(texto, comando, color):
     return tk.Button(
         panel,
@@ -902,13 +792,10 @@ def crear_boton(texto, comando, color):
         cursor="hand2"
     )
 
-crear_boton("Calcular", calcular, ACCENT).pack(fill=tk.X, padx=15, pady=5)
-crear_boton("Limpiar", limpiar, CARD2).pack(fill=tk.X, padx=15, pady=5)
+crear_boton("Calcular",                    calcular,          ACCENT).pack(fill=tk.X, padx=15, pady=5)
+crear_boton("Limpiar",                     limpiar,           CARD2).pack(fill=tk.X, padx=15, pady=5)
 crear_boton("Explicación del Procedimiento", mostrar_explicacion, "#5a4fcf").pack(fill=tk.X, padx=15, pady=5)
 
-# =========================================================
-# RESULTADO
-# =========================================================
 lbl_res = tk.Label(
     panel,
     text="Ingrese datos y calcule",
@@ -920,9 +807,6 @@ lbl_res = tk.Label(
 
 lbl_res.pack(fill=tk.X, padx=15, pady=10)
 
-# =========================================================
-# PROCEDIMIENTO
-# =========================================================
 tk.Label(
     panel,
     text="Procedimiento paso a paso",
@@ -934,9 +818,6 @@ tk.Label(
 frame_proc = tk.Frame(panel, bg=PANEL)
 frame_proc.pack(fill=tk.BOTH, expand=True, padx=15, pady=10)
 
-# =========================================================
-# PANEL DERECHO
-# =========================================================
 frame_der = tk.Frame(ventana, bg=BG)
 frame_der.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
 
